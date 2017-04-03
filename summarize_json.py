@@ -1,5 +1,8 @@
-# Summarizes the contents of a JSON file
-# Created by Philip Guo on 2013-07-18
+#!/usr/bin/env python
+"""Summarizes the contents of a JSON file
+"""
+
+#Created by Philip Guo on 2013-07-18
 
 import json
 import sys
