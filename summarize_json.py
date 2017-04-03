@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Summarizes the contents of a JSON file
 """
+from __future__ import print_function
 
 #Created by Philip Guo on 2013-07-18
 
@@ -8,6 +9,7 @@ import json
 import sys
 import operator
 from collections import defaultdict
+from functools import reduce
 
 def spaces(level):
     return '  ' * level
@@ -50,18 +52,18 @@ def pp_type_dict(type_dict):
 
 def summarize_dict(d, indent):
     for k, v, in d.iteritems():
-        print spaces(indent) + '> ' + repr(str(k)), ':'
+        print(spaces(indent) + '> ' + repr(str(k)), ':')
 
         if type(v) is dict:
-            print spaces(indent+1) + 'dict {'
+            print(spaces(indent+1) + 'dict {')
             summarize_dict(v, indent+1)
-            print spaces(indent+1) + '}'
+            print(spaces(indent+1) + '}')
         elif type(v) is list:
-            print spaces(indent+1) + 'list ['
+            print(spaces(indent+1) + 'list [')
             summarize_list(v, indent+1)
-            print spaces(indent+1) + ']'
+            print(spaces(indent+1) + ']')
         else:
-            print spaces(indent+1) + repr(str(v))
+            print(spaces(indent+1) + repr(str(v)))
 
 
 def summarize_list(lst, indent, is_toplevel=False):
@@ -70,36 +72,36 @@ def summarize_list(lst, indent, is_toplevel=False):
     ht = get_homogeneous_type(type_dict)
     prefix = spaces(indent+1)
     if len(lst) == 0:
-        print prefix + 'empty'
+        print(prefix + 'empty')
     elif ht:
         if ht == 'dict':
-            print prefix + 'dict {'
+            print(prefix + 'dict {')
             summarize_list_of_dicts(lst, indent+1)
-            print prefix + '}'
+            print(prefix + '}')
         elif ht == 'list':
-            print prefix + 'list ['
+            print(prefix + 'list [')
             summarize_list_of_lists(lst, indent+1)
-            print prefix + ']'
+            print(prefix + ']')
         elif ht == 'number':
-            print prefix + ht,
+            print(prefix + ht, end=' ')
             summarize_list_of_numbers(lst)
         elif ht == 'string':
-            print prefix + ht
+            print(prefix + ht)
             summarize_list_of_strings(lst, indent+1)
         elif ht == 'bool':
-            print prefix + ht
+            print(prefix + ht)
             summarize_list_of_bools(lst, indent+1)
         else:
             assert ht == 'null'
-            print prefix + ht
+            print(prefix + ht)
             #summarize_list_of_nulls(lst, indent+1)
     else:
         # test on
         # python summarize_json.py opt-aliasing-golden.trace.json 
-        print prefix + 'heterogeneous list:', pp_type_dict(type_dict)
+        print(prefix + 'heterogeneous list:', pp_type_dict(type_dict))
 
     if is_toplevel:
-        print prefix + 'list.length:', len(lst)
+        print(prefix + 'list.length:', len(lst))
 
 
 def summarize_list_of_dicts(lst, indent):
@@ -112,13 +114,13 @@ def summarize_list_of_dicts(lst, indent):
             field_counts[k] += 1
 
     for f, c in field_counts.iteritems():
-        print spaces(indent+1) + '> ' + repr(str(f)),
+        print(spaces(indent+1) + '> ' + repr(str(f)), end=' ')
         if c < total:
             sublist = [e[f] for e in lst if f in e]
-            print '(%d of %d records) :' % (c, total)
+            print('(%d of %d records) :' % (c, total))
         else:
             sublist = [e[f] for e in lst]
-            print ':'
+            print(':')
 
         summarize_list(sublist, indent+1)
 
@@ -130,18 +132,18 @@ def summarize_list_of_numbers(lst):
 
     # singleton
     if len(set(lst)) == 1:
-        print str(lst[0])
+        print(str(lst[0]))
         return
 
-    print '[min: %.4g, mean: %.4g, max: %.4g]' % (lst_min, lst_mean, lst_max),
+    print('[min: %.4g, mean: %.4g, max: %.4g]' % (lst_min, lst_mean, lst_max), end=' ')
 
     # test sortedness or reverse sortedness
     if sorted(lst) == lst:
-        print 'sorted'
+        print('sorted')
     elif reversed(lst) == lst:
-        print 'reverse sorted'
+        print('reverse sorted')
     else:
-        print
+        print()
 
 
 def summarize_list_of_strings(lst, indent):
@@ -164,7 +166,7 @@ def summarize_list_of_strings(lst, indent):
         if v == 1:
             break
 
-        print spaces(indent+1) + repr(str(k)), 'x', v
+        print(spaces(indent+1) + repr(str(k)), 'x', v)
         display_leftovers = True
         printed_set.add(k)
 
@@ -174,7 +176,7 @@ def summarize_list_of_strings(lst, indent):
 
     num_others = len(set(hist.keys()) - printed_set)
     if num_others > 0 and display_leftovers:
-        print spaces(indent+1) + '%d other elements' % num_others
+        print(spaces(indent+1) + '%d other elements' % num_others)
 
 
 def summarize_list_of_bools(lst, indent):
@@ -185,7 +187,7 @@ def summarize_list_of_bools(lst, indent):
         else:
             assert e is False
             num_false += 1
-    print spaces(indent+1) + '[True: %d, False: %d]' % (num_true, num_false)
+    print(spaces(indent+1) + '[True: %d, False: %d]' % (num_true, num_false))
 
 
 def summarize_list_of_lists(lst, indent):
@@ -200,7 +202,7 @@ def summarize_list_of_lists(lst, indent):
             hts.add(ht)
 
     if not hts:
-        print spaces(indent+1) + '[heterogeneous sub-lists]'
+        print(spaces(indent+1) + '[heterogeneous sub-lists]')
     elif len(hts) == 1:
         homogeneous_type = list(hts)[0]
         # flatten the list and recurse, tricky tricky!
@@ -208,24 +210,24 @@ def summarize_list_of_lists(lst, indent):
         if flattened_lst:
             summarize_list(flattened_lst, indent) # don't increase the indent level!
         else:
-            print spaces(indent+1) + 'empty lists'
+            print(spaces(indent+1) + 'empty lists')
     else:
-        print spaces(indent+1) + ', '.join(sorted(hts)) + ' (heterogeneous)'
+        print(spaces(indent+1) + ', '.join(sorted(hts)) + ' (heterogeneous)')
 
-    print spaces(indent+1) + 'sublist.lengths:',
+    print(spaces(indent+1) + 'sublist.lengths:', end=' ')
     summarize_list_of_numbers(list_lengths)
 
 
 if __name__ == "__main__":
     o = json.load(open(sys.argv[1]))
     if type(o) is dict:
-        print 'dict {'
+        print('dict {')
         summarize_dict(o, 0)
-        print '}'
+        print('}')
     elif type(o) is list:
-        print 'list ['
+        print('list [')
         summarize_list(o, 0, True)
-        print ']'
+        print(']')
     else:
-        print 'Primitive:', o
+        print('Primitive:', o)
 
