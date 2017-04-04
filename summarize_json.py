@@ -2,9 +2,11 @@
 """Summarizes the contents of a JSON file
 """
 from __future__ import print_function
+from __future__ import division
 
 #Created by Philip Guo on 2013-07-18
 
+from builtins import str
 import json
 import sys
 import operator
@@ -24,9 +26,9 @@ def analyze_types(lst):
             ret['dict'] += 1
         elif type(e) is list:
             ret['list'] += 1
-        elif type(e) in (str, unicode):
+        elif type(e) in (str, str):
             ret['string'] += 1
-        elif type(e) in (int, long, float):
+        elif type(e) in (int, int, float):
             ret['number'] += 1
         elif type(e) is bool:
             ret['bool'] += 1
@@ -38,7 +40,7 @@ def analyze_types(lst):
 # returns 'dict', 'list', 'string', 'number', 'bool', 'null'
 # if type_dict is COMPLETELY HOMOGENEOUS, otherwise return None
 def get_homogeneous_type(type_dict):
-    names_and_counts = type_dict.items()
+    names_and_counts = list(type_dict.items())
     non_zero = [e for e in names_and_counts if e[1] > 0]
     if len(non_zero) != 1:
         return None
@@ -46,12 +48,12 @@ def get_homogeneous_type(type_dict):
         return non_zero[0][0]
 
 def pp_type_dict(type_dict):
-    names_and_counts = ['%d %ss' % (e[1], e[0]) for e in type_dict.items()]
+    names_and_counts = ['%d %ss' % (e[1], e[0]) for e in list(type_dict.items())]
     return ', '.join(names_and_counts)
     
 
 def summarize_dict(d, indent):
-    for k, v, in d.iteritems():
+    for k, v, in d.items():
         print(spaces(indent) + '> ' + repr(str(k)), ':')
 
         if type(v) is dict:
@@ -110,10 +112,10 @@ def summarize_list_of_dicts(lst, indent):
 
     for e in lst:
         assert type(e) is dict
-        for k in e.keys():
+        for k in list(e.keys()):
             field_counts[k] += 1
 
-    for f, c in field_counts.iteritems():
+    for f, c in field_counts.items():
         print(spaces(indent+1) + '> ' + repr(str(f)), end=' ')
         if c < total:
             sublist = [e[f] for e in lst if f in e]
@@ -152,7 +154,7 @@ def summarize_list_of_strings(lst, indent):
         hist[e] += 1
 
     # if only singletons, don't do anything
-    if len(set(hist.values())) == 1 and hist.values()[0] == 1:
+    if len(set(hist.values())) == 1 and list(hist.values())[0] == 1:
         return
 
     # print N most common as 'enums' if they're NOT singletons
@@ -160,7 +162,7 @@ def summarize_list_of_strings(lst, indent):
     N = 5
     display_leftovers = False
     printed_set = set()
-    for k,v in sorted(hist.items(), key=lambda e:e[1], reverse=True):
+    for k,v in sorted(list(hist.items()), key=lambda e:e[1], reverse=True):
         # by the time we reach a singleton, just break (since we're
         # reverse sorted, so everything else is a singleton by now)
         if v == 1:
